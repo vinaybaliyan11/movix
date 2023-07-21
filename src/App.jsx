@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import {BrowserRouter, Routes, Route} from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { fetchDataFromApi } from "./utils/api";
-import { useSelector, useDispatch } from 'react-redux'
+
+import { useSelector, useDispatch } from "react-redux";
 import { getApiConfiguration, getGenres } from "./store/homeSlice";
 
 import Header from "./components/header/Header";
@@ -13,59 +14,60 @@ import Explore from "./pages/explore/Explore";
 import PageNotFound from "./pages/404/PageNotFound";
 
 function App() {
-  const dispatch = useDispatch()
-  const {url} = useSelector((state) => state.home);
-  console.log(url);
-  useEffect(()=>{
-    fetchApiConfig();
-    genresCall();
-  }, []);
+    const dispatch = useDispatch();
+    const { url } = useSelector((state) => state.home);
+    console.log(url);
 
-  const fetchApiConfig = () => {
-    fetchDataFromApi("/configuration?api_key=44b395310cfaa40bb9e37398daa7ace7")
-      .then((res) => {
-        console.log(res);
+    useEffect(() => {
+        fetchApiConfig();
+        genresCall();
+    }, []);
 
-        const url = {
-          backdrop: res.images.secure_base_url + "original",
-          poster: res.images.secure_base_url + "original",
-          profile: res.images.secure_base_url + "original",
-        };
+    const fetchApiConfig = () => {
+        fetchDataFromApi("/configuration?api_key=44b395310cfaa40bb9e37398daa7ace7").then((res) => {
+            console.log(res);
 
-        dispatch(getApiConfiguration(url));
-      });
-  };
+            const url = {
+                backdrop: res.images.secure_base_url + "original",
+                poster: res.images.secure_base_url + "original",
+                profile: res.images.secure_base_url + "original",
+            };
 
-  const genresCall = async () =>{
-    let promises = []
-    let endPoints = ["tv", "movie"]
-    let allGenres = {}
+            dispatch(getApiConfiguration(url));
+        });
+    };
 
-    endPoints.forEach((url) => {
-      promises.push(fetchDataFromApi(`/genre/${url}/list?api_key=${'44b395310cfaa40bb9e37398daa7ace7'}`))
-    })
+    const genresCall = async () => {
+        let promises = [];
+        let endPoints = ["tv", "movie"];
+        let allGenres = {};
 
-    const data = await Promise.all(promises);
-    // console.log(data)
-    data.map(({genres}) =>{
-      return genres.map((item) => (allGenres[item.id] = item))
-    });
-    // console.log(allGenres)
-    dispatch(getGenres(allGenres));
-  }
-  return (
-      <BrowserRouter>
-        <Header />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/:mediaType/:id" element={<Details />} />
-          <Route path="/search/:query" element={<SearchResult />} />
-          <Route path="/explore/:mediaType" element={<Explore />} />
-          <Route path="*" element={<PageNotFound />} />
-        </Routes>
-        <Footer />
-      </BrowserRouter>
-  );
+        endPoints.forEach((url) => {
+          promises.push(fetchDataFromApi(`/genre/${url}/list?api_key=${'44b395310cfaa40bb9e37398daa7ace7'}`));
+        });
+
+        const data = await Promise.all(promises);
+        console.log(data);
+        data.map(({ genres }) => {
+            return genres.map((item) => (allGenres[item.id] = item));
+        });
+
+        dispatch(getGenres(allGenres));
+    };
+
+    return (
+        <BrowserRouter>
+            <Header />
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/:mediaType/:id" element={<Details />} />
+                <Route path="/search/:query" element={<SearchResult />} />
+                <Route path="/explore/:mediaType" element={<Explore />} />
+                <Route path="*" element={<PageNotFound />} />
+            </Routes>
+            <Footer />
+        </BrowserRouter>
+    );
 }
 
-export default App
+export default App;
